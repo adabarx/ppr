@@ -26,9 +26,13 @@ module.exports = grammar({
 
     bold: $ => seq('**', seq(repeat1(choice($.word, $.punctuation))), '**'),
 
-    italic: $ => seq('*', seq(repeat1(choice($.word, $.punctuation))), '*'),
+    italic: $ => seq('*/', seq(repeat1(choice($.word, $.punctuation))), '/*'),
 
-    word: $ => repeat1(/[a-zA-Z\d']+/),
+    underline: $ => seq('*_', seq(repeat1(choice($.word, $.punctuation))), '_*'),
+
+    strikethrough: $ => seq('*—', seq(repeat1(choice($.word, $.punctuation))), '—*'),
+
+    word: $ => /[a-zA-Z\d']+/,
 
     sentence: $ => seq(repeat1(choice(
       $.word,
