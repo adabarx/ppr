@@ -16,16 +16,25 @@ enum Token {
     Text(String),
     OpenBookmark,
     CloseBookmark,
-    OpenItalic,
-    CloseItalic,
-    OpenUnderline,
-    CloseUnderline,
-    OpenStrikethrough,
-    CloseStrikethrough,
+    Italic,
+    Underline,
+    Strikethrough,
     CompilerInstruction,
     Heading(usize),
     Title,
     // do footnote stuff
+}
+
+impl Token {
+    fn to_style(&self) -> Option<Style> {
+        match self {
+            Token::Bold => Some(Style::Bold),
+            Token::Italic => Some(Style::Italic),
+            Token::Underline => Some(Style::Underline),
+            Token::Strikethrough => Some(Style::Strikethrough),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -66,14 +75,13 @@ fn parse_text(input: Vec<Token>) -> Vec<Text> {
                 text: txt,
                 styles: curr_style.clone(),
             }),
-            Token::Bold if curr_style.contains(&Style::Bold) => _ = curr_style.remove(&Style::Bold),
-            Token::Bold if !curr_style.contains(&Style::Bold) => _ = curr_style.insert(Style::Bold),
-            Token::OpenUnderline => _ = curr_style.insert(Style::Underline),
-            Token::OpenStrikethrough => _ = curr_style.insert(Style::Strikethrough),
-            Token::OpenItalic => _ = curr_style.insert(Style::Italic),
-            Token::CloseUnderline => _ = curr_style.remove(&Style::Underline),
-            Token::CloseStrikethrough => _ = curr_style.remove(&Style::Strikethrough),
-            Token::CloseItalic => _ = curr_style.remove(&Style::Italic),
+            Token::Italic | Token::Bold | Token::Underline | Token::Strikethrough => {
+                if curr_style.contains(&token.to_style().unwrap()) {
+                    curr_style.remove(&token.to_style().unwrap());
+                } else {
+                    curr_style.insert(token.to_style().unwrap());
+                }
+            }
             _ => panic!("NO!"),
         }
     }
@@ -136,30 +144,21 @@ fn lexerize(input: Vec<&str>) -> Vec<Vec<Token>> {
                             }
                         }
                     }
-                    b'/' if i + 1 < p_len && para[i + 1] == b'*' => {
+                    b'/' if i + 1 < p_len && para[i + 1] == b'/' => {
                         i += 1;
-                        Some(Token::CloseItalic)
+                        Some(Token::Italic)
                     }
-                    b'-' if i + 1 < p_len && para[i + 1] == b'*' => {
+                    b'-' if i + 1 < p_len && para[i + 1] == b'-' => {
                         i += 1;
-                        Some(Token::CloseStrikethrough)
+                        Some(Token::Strikethrough)
                     }
-                    b'_' if i + 1 < p_len && para[i + 1] == b'*' => {
+                    b'_' if i + 1 < p_len && para[i + 1] == b'_' => {
                         i += 1;
-                        Some(Token::CloseUnderline)
+                        Some(Token::Underline)
                     }
-                    b'*' if i + 1 < p_len => {
+                    b'*' if i + 1 < p_len && para[i + 1] == b'*' => {
                         i += 1;
-                        match para[i] {
-                            b'*' => Some(Token::Bold),
-                            b'/' => Some(Token::OpenItalic),
-                            b'_' => Some(Token::OpenUnderline),
-                            b'-' => Some(Token::OpenStrikethrough),
-                            _ => {
-                                i -= 1;
-                                None
-                            }
-                        }
+                        Some(Token::Bold)
                     }
                     _ => None,
                 };
@@ -178,7 +177,7 @@ fn lexerize(input: Vec<&str>) -> Vec<Vec<Token>> {
 
             rv
         })
-        .collect::<Vec<Vec<Token>>>()
+        .collect()
 }
 
 fn main() {
