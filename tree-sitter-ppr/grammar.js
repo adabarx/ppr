@@ -11,62 +11,88 @@ module.exports = grammar({
   name: "ppr",
 
   rules: {
-    comp_set_var: $ => seq('@', /[a-zA-Z\d]+/, '=', '"', seq(repeat1(choice($.word, $.punctuation))), '"', '\n'),
+    comp_set_var: $ => seq('@', /[a-zA-Z\d]+/, '=', seq(repeat1(choice($.word, $.punctuation))), '\n'),
 
     comp_get_var: $ => seq('@', /[a-zA-Z\d]+/),
 
     bookmark: $ => seq(
       '[',
       choice(
-        repeat1($.word),
+        $._content,
         $.bookmark,
       ),
       ']'
     ),
 
-    bold: $ => seq('**', seq(repeat1(choice($.word, $.punctuation))), '**'),
+    bold: $ => seq(
+      '**',
+      $._content,
+      '**'
+    ),
 
-    italic: $ => seq('*/', seq(repeat1(choice($.word, $.punctuation))), '/*'),
+    italic: $ => seq(
+      '//', 
+      $._content,
+      '//'
+    ),
 
-    underline: $ => seq('*_', seq(repeat1(choice($.word, $.punctuation))), '_*'),
+    underline: $ => seq(
+      '__',
+      $._content,
+      '__'
+    ),
 
-    strikethrough: $ => seq('*—', seq(repeat1(choice($.word, $.punctuation))), '—*'),
+    strikethrough: $ => seq(
+      '--',
+      $._content,
+      '--'
+    ),
 
     word: $ => /[a-zA-Z\d']+/,
 
-    sentence: $ => seq(repeat1(choice(
-      $.word,
-      $.semicolon,
-      $.colon,
-      $.comma,
-      $.question_mark,
-      $.exclaimation_point,
-      $.emdash,
-    )), $.period),
+    linked_word: $ => seq(repeat1(seq($.word, '-')), $.word),
+
+    sentence: $ => seq(
+      repeat1(choice(
+        $.word,
+        $.linked_word,
+        $.punctuation,
+      )),
+      $.sentence_end
+    ),
 
     paragraph: $ => seq(repeat1($.sentence), '\n'),
 
-    title: $ => seq('#', '!', $.paragraph),
+    title: $ => seq('#', '!', $._content),
 
-    heading: $ => seq('#', repeat('#'), $.paragraph),
+    heading: $ => seq(repeat1('#'), $._content),
 
     footnote: $ => seq(
       '{',
-      seq(repeat1(choice($.word, $.punctuation))),
+      $._content,
       '}', '^', '{',
-      seq(repeat1(choice($.word, $.punctuation))),
+      $._content,
       '}',
+    ),
+
+    sentence_end: $ => choice(
+      $.period,
+      $.question_mark,
+      $.exclamation_point,
     ),
 
     punctuation: $ => choice(
       $.semicolon,
       $.colon,
       $.comma,
-      $.period,
-      $.question_mark,
-      $.exclaimation_point,
       $.emdash,
     ),
+
+    period: $ => '.',
+
+    question_mark: $ => '?',
+
+    exclamation_point: $ => '!',
 
     semicolon: $ => ';',
 
@@ -74,12 +100,13 @@ module.exports = grammar({
 
     comma: $ => ',',
 
-    period: $ => '.',
+    emdash: $ => '-',
 
-    question_mark: $ => '?',
-
-    exclaimation_point: $ => '!',
-
-    emdash: $ => '—',
+    _content: $ => seq(repeat1(choice(
+      $.word,
+      $.linked_word,
+      $.punctuation,
+      $.sentence_end,
+    ))),
   }
 });
