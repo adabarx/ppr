@@ -21,7 +21,7 @@ impl Token {
     fn to_style(&self) -> Option<Style> {
         match self {
             Token::Bold => Some(Style::Bold),
-            Token::Italic => Some(Style::Italic),
+            Token::Italic => Some(Style::Italics),
             Token::Underline => Some(Style::Underline),
             Token::Strikethrough => Some(Style::Strikethrough),
             _ => None,
@@ -31,14 +31,14 @@ impl Token {
 
 #[derive(Debug)]
 pub(crate) struct Text {
-    text: String,
-    styles: HashSet<Style>,
+    pub(crate) text: String,
+    pub(crate) styles: HashSet<Style>,
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
-enum Style {
+pub(crate) enum Style {
     Bold,
-    Italic,
+    Italics,
     Underline,
     Strikethrough,
 }
@@ -57,7 +57,7 @@ impl Default for Content {
     }
 }
 
-type Document = Vec<Content>;
+pub(crate) type Document = Vec<Content>;
 
 pub(crate) fn parse_text(input: Vec<Token>) -> Vec<Text> {
     let mut rv = Vec::new();
