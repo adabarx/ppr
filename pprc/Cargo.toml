@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.23", features = ["derive"] }
+docx-rust = "0.1.9"
 rayon = "1.10.0"
