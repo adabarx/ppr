@@ -31,5 +31,16 @@
     "python": true,
     "rust": true,
     "swift": true
-  }
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.markdownsimple",
+      "file-types": [
+        "mds"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ]
+    }
+  ]
 }
