@@ -17,7 +17,7 @@ pub(crate) fn docx(input: Document, mut path: PathBuf) {
                 let prop = ParagraphProperty::default().justification(JustificationVal::Center);
                 para = para.property(prop);
                 for t in text.into_iter() {
-                    para = para.push_text(t.text);
+                    para = para.push_text(t.str);
                 }
             }
             Content::Heading { text, level } => {
@@ -28,7 +28,7 @@ pub(crate) fn docx(input: Document, mut path: PathBuf) {
                         .property(CharacterProperty::default().bold(true).size(size))
                         .push_text(
                             text.into_iter()
-                                .map(|t| t.text)
+                                .map(|t| t.str)
                                 .collect::<Vec<String>>()
                                 .join(""),
                         ),
@@ -37,21 +37,20 @@ pub(crate) fn docx(input: Document, mut path: PathBuf) {
             Content::Paragraph(text) => {
                 for t in text {
                     let mut prop = CharacterProperty::default()
-                        .bold(t.styles.contains(&Style::Bold))
-                        .italics(t.styles.contains(&Style::Italics))
-                        .strike(t.styles.contains(&Style::Strikethrough));
-                    if t.styles.contains(&Style::Underline) {
+                        .bold(t.style.contains(&Style::Bold))
+                        .italics(t.style.contains(&Style::Italics))
+                        .strike(t.style.contains(&Style::Strikethrough));
+                    if t.style.contains(&Style::Underline) {
                         prop = prop.underline("000000");
                     }
                     dbg!(&t);
                     para = para.push(
                         Run::default()
                             .property(prop)
-                            .push_text((t.text, TextSpace::Preserve)),
+                            .push_text((t.str, TextSpace::Preserve)),
                     );
                 }
             }
-            _ => (),
         }
         doc.document.push(para);
     }

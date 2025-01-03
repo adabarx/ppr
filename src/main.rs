@@ -3,10 +3,11 @@ use std::{fs, path::PathBuf};
 
 use clap::Parser;
 
+mod analysis;
 mod export;
 mod parse;
 
-use parse::{lexerize, parse_document};
+use parse::{lexerize, tok2cont};
 
 #[derive(Parser)]
 struct Opts {
@@ -23,7 +24,7 @@ fn main() {
 
     //dbg!(&tokens);
 
-    let ast = parse_document(tokens);
+    let ast = tok2cont(tokens);
 
     //dbg!(ast);
 
