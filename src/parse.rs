@@ -69,8 +69,7 @@ pub(crate) fn lexerize(input: String) -> Vec<Token> {
         .par_split('\\')
         .into_par_iter()
         .filter_map(|para| {
-            let text = para.chars().collect::<Vec<_>>();
-            let p_len = text.len();
+            let mut text = para.chars().collect::<Vec<_>>();
             let mut styles = HashSet::new();
             let mut i = 0;
             //dbg!(&text);
@@ -94,28 +93,30 @@ pub(crate) fn lexerize(input: String) -> Vec<Token> {
             i += 1;
             let mut input_buff = Vec::new();
 
+            //remove trailing whitespace
+            while let Some(c) = text.last() {
+                if c.is_whitespace() {
+                    text.pop();
+                } else {
+                    break;
+                }
+            }
+
+            //remove leading whitespace
+            while let Some(c) = text.get(i) {
+                if c.is_whitespace() {
+                    i += 1;
+                } else {
+                    break;
+                }
+            }
+
+            let p_len = text.len();
+
             loop {
                 if i == p_len {
                     rv.add_text(String::from_iter(input_buff.iter()), styles.clone());
                     break;
-                }
-
-                if text[i].is_whitespace() {
-                    let trim_start = i == 1;
-                    let trim_end = loop {
-                        if i + 1 == p_len {
-                            break true;
-                        }
-                        if text[i + 1].is_whitespace() {
-                            i += 1;
-                            continue;
-                        }
-                        i += 1;
-                        break false;
-                    };
-                    if trim_start && trim_end == false {
-                        input_buff.push(' ');
-                    }
                 }
 
                 if i + 1 == p_len {
@@ -124,14 +125,24 @@ pub(crate) fn lexerize(input: String) -> Vec<Token> {
                     continue;
                 }
 
-                let s = match text[i] {
+                if text[i].is_whitespace() {
+                    input_buff.push(' ');
+                    loop {
+                        i += 1;
+                        if !text[i].is_whitespace() {
+                            break;
+                        }
+                    }
+                }
+
+                let style = match text[i] {
                     '/' if text[i + 1] == '/' => Some(Style::Italics),
                     '_' if text[i + 1] == '_' => Some(Style::Underline),
                     '*' if text[i + 1] == '*' => Some(Style::Bold),
                     _ => None,
                 };
 
-                if let Some(s) = s {
+                if let Some(s) = style {
                     rv.add_text(String::from_iter(input_buff.iter()), styles.clone());
                     input_buff.clear();
                     i += 2;
