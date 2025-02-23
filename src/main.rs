@@ -3,7 +3,6 @@ use std::{fs, path::PathBuf};
 
 use clap::Parser;
 
-mod analysis;
 mod export;
 mod parse;
 

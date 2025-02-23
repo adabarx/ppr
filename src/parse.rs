@@ -68,11 +68,12 @@ pub(crate) fn lexerize(input: String) -> Vec<Token> {
     input
         .par_split('\\')
         .into_par_iter()
-        .map(|para| {
+        .filter_map(|para| {
             let text = para.chars().collect::<Vec<_>>();
             let p_len = text.len();
             let mut styles = HashSet::new();
             let mut i = 0;
+            //dbg!(&text);
             let mut rv = match text[i] {
                 'P' => Token::Paragraph(Vec::new()),
                 'T' => Token::Title(Vec::new()),
@@ -82,7 +83,12 @@ pub(crate) fn lexerize(input: String) -> Vec<Token> {
                     Token::Heading(digit, Vec::new())
                 }
                 'B' => Token::Bookmark(Vec::new()),
-                _ => panic!("nope"),
+                '\u{feff}' => return None,
+                _ => {
+                    dbg!(text[i]);
+                    println!("\"{}\"", text[i]);
+                    panic!("nope");
+                }
             };
 
             i += 1;
@@ -140,7 +146,7 @@ pub(crate) fn lexerize(input: String) -> Vec<Token> {
                 input_buff.push(text[i]);
                 i += 1;
             }
-            rv
+            Some(rv)
         })
         .collect()
 }
