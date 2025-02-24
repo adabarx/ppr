@@ -15,8 +15,6 @@ pub(crate) enum Token {
     Bookmark(Vec<Text>),
 }
 
-// document:
-
 impl Token {
     fn add_text(&mut self, str: String, style: HashSet<Style>) {
         match self {
